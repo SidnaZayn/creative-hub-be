@@ -1,0 +1,159 @@
+import request from 'supertest';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+beforeEach(async () => {
+  await prisma.user.deleteMany();
+  await request(global.app).post('/api/auth/register').send({
+    name: 'abc',
+    username: 'abc',
+    email: 'abc@mail.com',
+    password: 'abc',
+    password_confirmation: 'abc',
+    age: '20',
+  });
+});
+
+describe('POST /api/auth/register', () => {
+  test('Should return false if username/email/password/name/age is empty', async () => {
+    const response = await request(global.app).post('/api/auth/register');
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.message).toBe('Name, username, email, password and age are required');
+  });
+  test('Should return false if username already exists ', async () => {
+    const response = await request(global.app).post('/api/auth/register').send({
+      name: 'abc2',
+      username: 'abc',
+      email: 'abc2@mail.com',
+      password: 'abc',
+      age: '20',
+    });
+    expect(response.status).toBe(409);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.message).toBe('Username already exists');
+  });
+  test('Should return false if email already exists ', async () => {
+    const response = await request(global.app).post('/api/auth/register').send({
+      name: 'abc2',
+      username: 'abc2',
+      email: 'abc@mail.com',
+      password: 'abc',
+      age: '20',
+    });
+    expect(response.status).toBe(409);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.message).toBe('Email already exists');
+  });
+  test('Should return false if password does not match', async () => {
+    const response = await request(global.app).post('/api/auth/register').send({
+      name: 'abc2',
+      username: 'abc2',
+      email: 'abc2@mail.com',
+      password: 'abc',
+      password_confirmation: 'abc1',
+      age: '20',
+    });
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.message).toBe('Password does not match');
+  });
+  test('Should return false if age is restricted', async () => {
+    const response = await request(global.app).post('/api/auth/register').send({
+      name: 'abc2',
+      username: 'abc2',
+      email: 'abc2@mail.com',
+      password: 'abc',
+      password_confirmation: 'abc',
+      age: '15',
+    });
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.message).toBe('Age is restricted');
+  });
+  test('return status 201 and create user with valid data', async () => {
+    const response = await request(global.app).post('/api/auth/register').send({
+      name: 'abc3',
+      username: 'abc3',
+      email: 'abc3@mail.com',
+      password: 'abc',
+      password_confirmation: 'abc',
+      age: '20',
+    });
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty('id');
+    expect(response.body).toHaveProperty('name');
+    expect(response.body).toHaveProperty('username');
+    expect(response.body).toHaveProperty('email');
+    expect(response.body).toHaveProperty('age');
+  });
+});
+
+describe('POST /api/auth/login', () => {
+  test('Should return false if missing email/username/password', async () => {
+    const response = await request(global.app).post('/api/auth/login').send({
+      username: '',
+      password: '',
+    });
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.message).toBe('Email/username and/or password are required');
+  });
+  test('Should return false if incorrect password', async () => {
+    const response = await request(global.app).post('/api/auth/login').send({
+      username: 'abc@mail.com',
+      password: 'abc1',
+    });
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.message).toBe('Unauthorized');
+  });
+  test('Should return false if unregistered email', async () => {
+    const response = await request(global.app).post('/api/auth/login').send({
+      username: 'abc1@mail.com',
+      password: 'abc',
+    });
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.message).toBe('Unauthorized');
+  });
+  test('Should return false if unregistered username', async () => {
+    const response = await request(global.app).post('/api/auth/login').send({
+      username: 'abc1',
+      password: 'abc',
+    });
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.message).toBe('Unauthorized');
+  });
+  test('Should return true with code 200 and JWT token login with username', async () => {
+    const response = await request(global.app).post('/api/auth/login').send({
+      username: 'abc',
+      password: 'abc',
+    });
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('token');
+  });
+  test('Should return true with code 200 and JWT token login with email', async () => {
+    const response = await request(global.app).post('/api/auth/login').send({
+      username:'abc@mail.com',
+      password: 'abc',
+    });
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('token');
+  });
+  test('should return link to get self', async () => {
+    const response = await request(global.app).post('/api/auth/login').send({
+      username:'abc@mail.com',
+      password: 'abc',
+    });
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('_links');
+  })
+  test('admin is exist', async () => {
+    const isAdminExist = await prisma.user.findFirst({
+      where: { isAdmin: true },
+    })
+    expect(isAdminExist).not.toBeNull();
+  })
+});
