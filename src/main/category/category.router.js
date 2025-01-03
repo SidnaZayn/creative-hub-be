@@ -28,9 +28,12 @@ router.get('/categories', verifyToken, async (req, res) => {
     if (req.body.size) {
       params.size = req.body.size;
     }
+    if (req.body.name) {
+      params.name = req.body.name;
+    }
 
     const data = await categoryService.getCategories(params);
-    return res.status(200).send({ data, message: 'success get data' });
+    return res.status(200).send({ ...data, message: 'success get data' });
   } catch (error) {
     return res.status(500).send({ error });
   }

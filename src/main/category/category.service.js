@@ -24,21 +24,30 @@ const getCategories = async (params) => {
   if (params.page) {
     page = params.page;
   }
-
   if (params.size) {
     size = params.size;
+  }
+  if (params.name) {
+    where.name = {
+      contains: params.name,
+    };
   }
 
   const data = await prisma.category.findMany({
     skip: page * size,
     take: size,
+    where: where,
+  });
+
+  const count = await prisma.category.count({
+    where,
   });
 
   if (!data) {
     throw new Error('categories not found');
   }
 
-  return data;
+  return { data, count };
 };
 
 const getCategoryById = async (id) => {

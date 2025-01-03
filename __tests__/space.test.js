@@ -9,7 +9,7 @@ beforeAll(async () => {
     email: 'zidnazen@gmail.com',
     password: '11223344',
   });
-  const { access_token, refresh_token } = data.session;
+  const { access_token, refresh_token } = data.session; console.log(access_token)
 
   userToken = access_token;
   const { data: userData } = await supabase.auth.getUser();
@@ -29,6 +29,7 @@ describe('POST /api/space', () => {
         features: { audio: true, wifi: true, projector: true, ac: true },
         capacity: 10,
         pricePerHour: 50000,
+        categoryId:'0af8eab5-4108-4ba1-b004-7333622e6f10'
       });
 
     testData = response.body.data;
@@ -36,6 +37,7 @@ describe('POST /api/space', () => {
     expect(response.body.data).toHaveProperty('id');
     expect(response.body.data).toHaveProperty('name');
     expect(response.body.data).toHaveProperty('ownerId');
+    expect(response.body.data.categoryId).toBe('0af8eab5-4108-4ba1-b004-7333622e6f10');
   });
 
   test('create space with invalid data', async () => {

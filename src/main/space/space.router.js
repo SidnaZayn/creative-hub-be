@@ -15,7 +15,9 @@ router.post('/space', verifyToken, async (req, res) => {
     }
   } catch (error) {
     // console.error(error); // Use console.error for errors
-    return res.status(400).json({ message: 'Name, capacity and pricePerHour are required', error: error.message });
+    return res
+      .status(400)
+      .json({ message: 'Name, capacity and pricePerHour are required', error: error.message });
   }
 });
 
@@ -28,9 +30,12 @@ router.get('/space', verifyToken, async (req, res) => {
     if (req.body.size) {
       params.size = req.body.size;
     }
+    if (req.body.name) {
+      params.name = req.body.name;
+    }
 
     const data = await spaceService.getSpaces(params);
-    return res.status(200).send({ data, message: 'success get data' });
+    return res.status(200).send({ ...data, message: 'success get data' });
   } catch (error) {
     return res.status(500).send({ error });
   }

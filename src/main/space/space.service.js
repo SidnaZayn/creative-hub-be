@@ -12,12 +12,9 @@ const createSpace = async (body) => {
       features: body.features,
       capacity: body.capacity,
       pricePerHour: body.pricePerHour,
+      categoryId: body.categoryId,
     },
   });
-
-  // if (error) {
-  //   throw error;
-  // }
 
   return data;
 };
@@ -35,12 +32,25 @@ const getSpaces = async (params) => {
     size = params.size;
   }
 
+  if (params.name) {
+    where.name = {
+      contains: params.name,
+    };
+  }
+
   const data = await prisma.space.findMany({
     skip: page * size,
     take: size,
+    where: where,
   });
 
-  return data;
+  const count = await prisma.space.count({
+    where: where,
+  });
+
+  if (!data) throw new Error('spaces not found');
+
+  return { data, count };
 };
 
 const getSpaceById = async (id) => {
