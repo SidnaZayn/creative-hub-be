@@ -44,5 +44,5 @@ model SpaceImage {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  space Space? @relation(fields: [spaceId], references: [id])
+  space Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 }

@@ -4,9 +4,14 @@ import verifyToken from '../../middleware/auth.guard.js';
 
 const router = express.Router();
 
+BigInt.prototype.toJSON = function () {
+  const int = Number.parseInt(this.toString());
+  return int ?? this.toString();
+};
+
 router.post('/space', verifyToken, async (req, res) => {
   try {
-    const data = await spaceService.createSpace(req.body);
+    const data = await spaceService.createSpaceWithImage(req.body);
     if (data) {
       return res.status(201).json({ data, message: 'success create data' });
     } else {

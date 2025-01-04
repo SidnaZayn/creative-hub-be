@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import spaceImage from '../space-image/space-image.service.js';
 
 const prisma = new PrismaClient();
 
@@ -17,6 +18,27 @@ const createSpace = async (body) => {
   });
 
   return data;
+};
+
+const createSpaceWithImage = async (body) => {
+  // if (body.images === undefined || body.images.length === 0) throw new Error('space images is required!');
+
+  const spaceData = await createSpace(body);
+
+  const spaceImages = body.images.map(async (img) => {
+    const imgData = await spaceImage.createSpaceImage({
+      filename: img.filename,
+      spaceId: spaceData.id,
+      size: img.size,
+      url: img.url,
+    });
+    const size = JSON.stringify(imgData.size);
+    return { size: size, ...imgData };
+  });
+
+  const imagesData = await Promise.all(spaceImages);
+
+  return { ...spaceData, images: imagesData };
 };
 
 const getSpaces = async (params) => {
@@ -90,4 +112,11 @@ const deleteSpace = async (id) => {
   }
 };
 
-export default { getSpaces, getSpaceById, createSpace, updateSpace, deleteSpace };
+export default {
+  getSpaces,
+  getSpaceById,
+  createSpace,
+  updateSpace,
+  deleteSpace,
+  createSpaceWithImage,
+};
