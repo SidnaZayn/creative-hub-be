@@ -9,7 +9,7 @@ beforeAll(async () => {
     email: 'zidnazen@gmail.com',
     password: '11223344',
   });
-  const { access_token, refresh_token } = data.session; console.log(access_token)
+  const { access_token, refresh_token } = data.session;
 
   userToken = access_token;
   const { data: userData } = await supabase.auth.getUser();

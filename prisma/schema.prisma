@@ -31,5 +31,18 @@ model Space {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  category Category? @relation(fields: [categoryId], references: [id])
+  category   Category?    @relation(fields: [categoryId], references: [id])
+  SpaceImage SpaceImage[]
+}
+
+model SpaceImage {
+  id        String   @id @default(uuid())
+  spaceId   String
+  filename  String
+  size      BigInt
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  space Space? @relation(fields: [spaceId], references: [id])
 }
