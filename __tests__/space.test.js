@@ -5,15 +5,15 @@ let user;
 let userToken;
 let testData;
 beforeAll(async () => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: 'zidnazen@gmail.com',
-    password: '11223344',
-  });
-  const { access_token, refresh_token } = data.session;
+  // const { data, error } = await supabase.auth.signInWithPassword({
+  //   email: 'zidnazen@gmail.com',
+  //   password: '11223344',
+  // });
+  // const { access_token, refresh_token } = data.session; console.log(access_token)
 
-  userToken = access_token;
-  const { data: userData } = await supabase.auth.getUser();
-  user = userData.user;
+  userToken = global.app.access_token; 
+  const { data: userData } = await supabase.auth.getUser(userToken);
+  user = userData.user; 
 });
 
 describe('POST /api/space', () => {
@@ -34,17 +34,17 @@ describe('POST /api/space', () => {
           {
             filename: 'image_1.jpg',
             size: 500,
-            url:'google.com'
+            url: 'google.com',
           },
           {
             filename: 'image_2.jpg',
             size: 500,
-            url:'google.com'
+            url: 'google.com',
           },
           {
             filename: 'image_3.jpg',
             size: 500,
-            url:'google.com'
+            url: 'google.com',
           },
         ],
       });
@@ -58,19 +58,19 @@ describe('POST /api/space', () => {
     expect(response.body.data.categoryId).toBe('0af8eab5-4108-4ba1-b004-7333622e6f10');
   });
 
-  // test('create space with invalid data', async () => {
-  //   const response = await request(global.app)
-  //     .post('/api/space')
-  //     .set('Authorization', 'Bearer ' + userToken)
-  //     .send({
-  //       description: 'desc',
-  //       location: 'Jakarta',
-  //       features: { audio: true, wifi: true, projector: true, ac: true },
-  //     });
-  //   expect(response.status).toBe(400);
-  //   expect(response.body).toHaveProperty('error');
-  //   expect(response.body.message).toBe('Name, capacity and pricePerHour are required');
-  // });
+  test('create space with invalid data', async () => {
+    const response = await request(global.app)
+      .post('/api/space')
+      .set('Authorization', 'Bearer ' + userToken)
+      .send({
+        description: 'desc',
+        location: 'Jakarta',
+        features: { audio: true, wifi: true, projector: true, ac: true },
+      });
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.message).toBe('Name, capacity and pricePerHour are required');
+  });
 });
 
 describe('GET /api/space', () => {
@@ -151,10 +151,15 @@ describe('PUT /api/space/:id', () => {
 });
 
 describe('DELETE /api/space/:id', () => {
-  test('delete space by id', async () => {
+  test('delete space by id and delete images', async () => {
     const response = await request(global.app)
       .delete('/api/space/' + testData.id)
       .set('Authorization', 'Bearer ' + userToken);
+    const images = await request(global.app)
+      .get('/api/space/image?spaceId=' + testData.id)
+      .set('Authorization', 'Bearer ' + userToken);
+    expect(images.body.data.length).toBe(0);
+    expect(response.body.message).toBe('success delete data');
     expect(response.status).toBe(200);
   });
 

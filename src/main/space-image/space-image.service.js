@@ -8,21 +8,49 @@ const createSpaceImage = async (body) => {
       filename: body.filename,
       spaceId: body.spaceId,
       size: body.size,
-      url: body.url
+      url: body.url,
     },
   });
 
   return data;
 };
 
-const getSpaceImages = async (spaceId) => {
-  const data = await prisma.spaceImage.findMany({
+const getSpaceImages = async (params) => {
+  try {
+    const data = await prisma.spaceImage.findMany({
+      where: {
+        spaceId: params.spaceId,
+      },
+    });
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getSpaceImageById = async (id) => {
+  const data = await prisma.spaceImage.findUnique({
     where: {
-      spaceId,
+      id,
+    },
+  });
+
+  if (!data) {
+    throw new Error('space image not found');
+  }
+  
+  return data;
+};
+
+const deleteSpaceImage = async (id) => {
+  const data = await prisma.spaceImage.delete({
+    where: {
+      id,
     },
   });
 
   return data;
 };
 
-export default { createSpaceImage, getSpaceImages };
+export default { createSpaceImage, getSpaceImages, getSpaceImageById, deleteSpaceImage };

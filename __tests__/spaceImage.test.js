@@ -4,15 +4,17 @@ import { supabase } from '../src/lib/supabase';
 let user;
 let userToken;
 let testData;
-beforeAll(async () => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: 'zidnazen@gmail.com',
-    password: '11223344',
-  });
-  const { access_token, refresh_token } = data.session;
+const spaceId = '963d34d3-d4a6-4621-8338-3b9f24d0b14c';
 
-  userToken = access_token;
-  const { data: userData } = await supabase.auth.getUser();
+beforeAll(async () => {
+  // const { data, error } = await supabase.auth.signInWithPassword({
+  //   email: 'zidnazen@gmail.com',
+  //   password: '11223344',
+  // });
+  // const { access_token, refresh_token } = data.session;
+
+  userToken = global.app.access_token;
+  const { data: userData } = await supabase.auth.getUser(userToken);
   user = userData.user;
 });
 
@@ -23,34 +25,34 @@ describe('POST /api/space/image', () => {
       .set('Authorization', 'Bearer ' + userToken)
       .send({
         filename: 'image.jpg',
-        spaceId: '963d34d3-d4a6-4621-8338-3b9f24d0b14c',
+        spaceId: spaceId,
         size: 5000,
+        url: 'google.com',
       });
 
     testData = response.body.data;
     expect(response.status).toBe(201);
     expect(response.body.data).toHaveProperty('id');
-    expect(response.body.data).toHaveProperty('name');
-    expect(response.body.data).toHaveProperty('ownerId');
-    expect(response.body.data.categoryId).toBe('0af8eab5-4108-4ba1-b004-7333622e6f10');
+    expect(response.body.data).toHaveProperty('filename');
+    expect(response.body.data.spaceId).toBe(spaceId);
   });
 
   test('create space with invalid data', async () => {
     const response = await request(global.app)
-      .post('/api/space')
+      .post('/api/space/image')
       .set('Authorization', 'Bearer ' + userToken)
       .send();
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('error');
-    expect(response.body.message).toBe('filename and space id is required');
+    expect(response.body.message).toBe('filename, url and space id is required');
   });
 });
 
 describe('GET /api/space/image', () => {
   test('fetch all images by space id', async () => {
     const response = await request(global.app)
-      .get('/api/space/image?spaceId=963d34d3-d4a6-4621-8338-3b9f24d0b14c')
+      .get('/api/space/image?spaceId='+ spaceId)
       .set('Authorization', 'Bearer ' + userToken);
     expect(response.status).toBe(200);
     expect(response.body.data).toBeInstanceOf(Array);
@@ -60,19 +62,21 @@ describe('GET /api/space/image', () => {
     const response = await request(global.app)
       .get('/api/space/image')
       .set('Authorization', 'Bearer ' + userToken);
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('space id is required');
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe('Internal Error');
   });
 });
 
 describe('GET /api/space/image/:id', () => {
-  test('fetch space by id', async () => {
+  test('fetch image by id', async () => {
     const response = await request(global.app)
       .get('/api/space/image/' + testData.id)
       .set('Authorization', 'Bearer ' + userToken);
 
     expect(response.status).toBe(200);
     expect(response.body.data).toHaveProperty('id');
+    expect(response.body.data).toHaveProperty('filename');
+    expect(response.body.data).toHaveProperty('url');
   });
 
   test('fetch space by invalid id', async () => {

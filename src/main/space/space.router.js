@@ -1,6 +1,7 @@
 import express from 'express';
 import spaceService from './space.service.js';
 import verifyToken from '../../middleware/auth.guard.js';
+import spaceImageService from '../space-image/space-image.service.js';
 
 const router = express.Router();
 
@@ -29,14 +30,14 @@ router.post('/space', verifyToken, async (req, res) => {
 router.get('/space', verifyToken, async (req, res) => {
   try {
     let params = {};
-    if (req.body.page) {
-      params.page = req.body.page;
+    if (req.query.page) {
+      params.page = req.query.page;
     }
-    if (req.body.size) {
-      params.size = req.body.size;
+    if (req.query.size) {
+      params.size = req.query.size;
     }
-    if (req.body.name) {
-      params.name = req.body.name;
+    if (req.query.name) {
+      params.name = req.query.name;
     }
 
     const data = await spaceService.getSpaces(params);
@@ -57,6 +58,19 @@ router.get('/space/:id', verifyToken, async (req, res) => {
     return res.status(500).send({ error });
   }
 });
+
+router.get('/space/:id/images', verifyToken, async (req, res) => {
+  try {
+    const spaceId = req.params.id;
+    if (!spaceId) throw new Error('space id null !');
+
+    const data = await spaceImageService.getSpaceImages(spaceId);
+    return res.status(200).send({ data, message: 'success get data' });
+  } catch (error) {
+    return res.status(500).send({ error });
+  }
+});
+
 router.put('/space/:id', verifyToken, async (req, res) => {
   try {
     const id = req.params.id;
