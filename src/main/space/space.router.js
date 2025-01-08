@@ -12,7 +12,8 @@ BigInt.prototype.toJSON = function () {
 
 router.post('/space', verifyToken, async (req, res) => {
   try {
-    const data = await spaceService.createSpaceWithImage(req.body);
+    const {images: imagesData, ...spaceData} = req.body;
+    const data = await spaceService.createSpaceWithImage(spaceData, imagesData);
     if (data) {
       return res.status(201).json({ data, message: 'success create data' });
     } else {

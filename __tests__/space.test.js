@@ -11,9 +11,9 @@ beforeAll(async () => {
   // });
   // const { access_token, refresh_token } = data.session; console.log(access_token)
 
-  userToken = global.app.access_token; 
+  userToken = global.app.access_token;
   const { data: userData } = await supabase.auth.getUser(userToken);
-  user = userData.user; 
+  user = userData.user;
 });
 
 describe('POST /api/space', () => {
@@ -34,29 +34,33 @@ describe('POST /api/space', () => {
           {
             filename: 'image_1.jpg',
             size: 500,
+            path: 'F:/Sidna/code learning/creative-hub/creative-hub-be/__tests__/img/image_1.jpg',
             url: 'google.com',
           },
           {
             filename: 'image_2.jpg',
             size: 500,
+            path: 'F:/Sidna/code learning/creative-hub/creative-hub-be/__tests__/img/image_2.jpg',
             url: 'google.com',
           },
           {
             filename: 'image_3.jpg',
             size: 500,
+            path: 'F:/Sidna/code learning/creative-hub/creative-hub-be/__tests__/img/image_3.jpg',
             url: 'google.com',
           },
         ],
-      });
+      }); 
 
-    testData = response.body.data;
+    testData = response.body.data.space;
     expect(response.status).toBe(201);
-    expect(response.body.data).toHaveProperty('id');
-    expect(response.body.data).toHaveProperty('name');
-    expect(response.body.data).toHaveProperty('ownerId');
-    expect(response.body.data).toHaveProperty('images');
-    expect(response.body.data.categoryId).toBe('0af8eab5-4108-4ba1-b004-7333622e6f10');
-  });
+    expect(response.body.data).toHaveProperty('space');
+    expect(response.body.data.images).toBeInstanceOf(Array);
+    expect(response.body.data.space).toHaveProperty('id');
+    expect(response.body.data.space).toHaveProperty('name');
+    expect(response.body.data.space).toHaveProperty('ownerId');
+    expect(response.body.data.space.categoryId).toBe('0af8eab5-4108-4ba1-b004-7333622e6f10');
+  }, 10000);
 
   test('create space with invalid data', async () => {
     const response = await request(global.app)

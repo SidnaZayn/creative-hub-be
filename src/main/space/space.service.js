@@ -1,10 +1,11 @@
 import { PrismaClient } from '@prisma/client';
+import { v2 as cloudinary } from 'cloudinary';
 import spaceImage from '../space-image/space-image.service.js';
 
 const prisma = new PrismaClient();
 
-const createSpace = async (body) => {
-  const data = await prisma.space.create({
+const createSpace = async (body, dbClient = prisma) => {
+  const data = await dbClient.space.create({
     data: {
       name: body.name,
       ownerId: body.ownerId,
@@ -20,7 +21,47 @@ const createSpace = async (body) => {
   return data;
 };
 
-const createSpaceWithImage = async (body) => {
+const createSpaceWithImage = async (spaceData, files) => {
+  try {
+    return await prisma.$transaction(
+      async (trx) => {
+        //1. create space
+        const insertedSpaceData = await createSpace(spaceData, trx);
+
+        //2. upload images to cloudinary
+        const uploadedImages = [];
+        for (const file of files) {
+          const uploadResult = await cloudinary.uploader.upload(file.path, {
+            folder: `CreativeHub/spaces/${insertedSpaceData.id}`,
+            resource_type: 'image',
+          });
+
+          //insert data to space image table
+          const imgData = await spaceImage.createSpaceImage(trx, {
+            filename: file.filename,
+            spaceId: insertedSpaceData.id,
+            size: file.size,
+            url: uploadResult.secure_url,
+            publicId: uploadResult.public_id, //didn't used yet in controller
+          });
+
+          const size = JSON.stringify(imgData.size);
+          uploadedImages.push({ size: size, ...imgData });
+        }
+
+        return { space: insertedSpaceData, images: uploadedImages };
+      },
+      {
+        timeout: 10000, //ms
+      }
+    );
+  } catch (error) {
+    // console.log(error)
+    throw error;
+  }
+};
+
+const createSpaceWithImage_ = async (body) => {
   // if (body.images === undefined || body.images.length === 0) throw new Error('space images is required!');
 
   const spaceData = await createSpace(body);

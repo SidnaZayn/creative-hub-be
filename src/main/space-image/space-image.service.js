@@ -2,8 +2,8 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const createSpaceImage = async (body) => {
-  const data = await prisma.spaceImage.create({
+const createSpaceImage = async (dbClient = prisma,body) => {
+  const data = await dbClient.spaceImage.create({
     data: {
       filename: body.filename,
       spaceId: body.spaceId,
