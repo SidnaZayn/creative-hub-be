@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from "cors";
 import auth from './src/main/auth/auth.router.js';
 import tests from './src/main/tests/tests.router.js';
 import space from './src/main/space/space.router.js';
@@ -10,6 +11,7 @@ import { createSuperAdmin } from './src/main/auth/auth.service.js';
 const app = express();
 
 app.use(bodyParser.json());
+app.use(cors())
 app.use('/', tests);
 app.use('/api', auth);
 app.use('/api', spaceImage);
