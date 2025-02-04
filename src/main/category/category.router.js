@@ -19,7 +19,7 @@ router.post('/category', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/categories', verifyToken, async (req, res) => {
+router.get('/categories', async (req, res) => {
   try {
     let params = {};
     if (req.body.page) {

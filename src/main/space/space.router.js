@@ -14,9 +14,10 @@ BigInt.prototype.toJSON = function () {
 
 router.post('/space', verifyToken, upload.array('images'), async (req, res) => {
     try {
-        const { images: imagesData, ...spaceData } = req.body;
+        let { images: imagesData, sessionsData: sessions, ...spaceData } = req.body;
+        // sessions = JSON.parse(sessions);
         const files = req.files;
-        const data = await spaceService.createSpaceWithImage(spaceData, files);
+        const data = await spaceService.createSpaceWithImage(spaceData, files, sessions);
         if (data) {
             return res.status(201).json({ data, message: 'success create data' });
         } else {
@@ -25,16 +26,14 @@ router.post('/space', verifyToken, upload.array('images'), async (req, res) => {
         }
     } catch (error) {
         console.error(error); // Use console.error for errors
-        return res
-            .status(400)
-            .json({
-                message: 'Name, capacity and pricePerHour are required',
-                error: error.message,
-            });
+        return res.status(400).json({
+            message: 'Name, capacity and pricePerHour are required',
+            error: error.message,
+        });
     }
 });
 
-router.get('/space', verifyToken, async (req, res) => {
+router.get('/space', async (req, res) => {
     try {
         let params = {};
         if (req.query.page) {
@@ -46,15 +45,22 @@ router.get('/space', verifyToken, async (req, res) => {
         if (req.query.name) {
             params.name = req.query.name;
         }
+        if (req.query.capacity) {
+            params.capacity = req.query.capacity;
+        }
+        if (req.query.userId || req.query.ownerId) {
+            params.userId = req.query.userId || req.query.ownerId;
+        }
 
         const data = await spaceService.getSpaces(params);
         return res.status(200).send({ ...data, message: 'success get data' });
     } catch (error) {
+        console.log(error);
         return res.status(500).send({ error });
     }
 });
 
-router.get('/space/:id', verifyToken, async (req, res) => {
+router.get('/space/:id', async (req, res) => {
     try {
         const id = req.params.id;
         if (!id) throw new Error('id null !');
@@ -66,14 +72,23 @@ router.get('/space/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/space/:id/images', verifyToken, async (req, res) => {
+router.get('/space/:id/images', async (req, res) => {
     try {
         const spaceId = req.params.id;
         if (!spaceId) throw new Error('space id null !');
 
-        const data = await spaceImageService.getSpaceImages(spaceId);
-        return res.status(200).send({ data, message: 'success get data' });
+        let params = {};
+        if (req.query.size) {
+            params.size = req.query.size;
+        }
+        if (req.query.page) {
+            params.page = req.query.page;
+        }
+
+        const { data, count } = await spaceImageService.getSpaceImages(spaceId, params);
+        return res.status(200).send({ data, count, message: 'success get data' });
     } catch (error) {
+        console.log(error);
         return res.status(500).send({ error });
     }
 });

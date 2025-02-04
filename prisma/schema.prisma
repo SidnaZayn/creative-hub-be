@@ -24,15 +24,17 @@ model Space {
   categoryId   String?
   name         String
   description  String?
-  location     String
+  city         String?
+  address      String?
   features     Json?
   capacity     Int
   pricePerHour Float
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  category   Category?    @relation(fields: [categoryId], references: [id])
-  SpaceImage SpaceImage[]
+  category     Category?      @relation(fields: [categoryId], references: [id])
+  SpaceImage   SpaceImage[]
+  SpaceSession SpaceSession[]
 }
 
 model SpaceImage {
@@ -45,4 +47,49 @@ model SpaceImage {
   updatedAt DateTime @updatedAt
 
   space Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+}
+
+enum BookingStatus {
+  UNPAID
+  PAID
+}
+
+enum Days {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model SpaceSession {
+  id        String   @id @default(uuid())
+  day       Days
+  startTime String?
+  endTime   String?
+  price     Float?
+  capacity  Int?
+  notes     String?
+  spaceId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  space   Space?    @relation(fields: [spaceId], references: [id])
+  Booking Booking[]
+}
+
+model Booking {
+  id             String        @id @default(uuid())
+  date           DateTime
+  spaceSessionId String?
+  spaceId        String?
+  status         BookingStatus @default(UNPAID)
+  userId         String?
+  name           String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  spaceSession SpaceSession? @relation(fields: [spaceSessionId], references: [id])
 }

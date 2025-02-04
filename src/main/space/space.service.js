@@ -1,7 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { Days, PrismaClient } from '@prisma/client';
 import { v2 as cloudinary } from 'cloudinary';
-import fs from "fs";
+import fs from 'fs';
 import spaceImage from '../space-image/space-image.service.js';
+import spaceSession from '../space-session/space-session.service.js';
 
 const prisma = new PrismaClient();
 
@@ -11,7 +12,8 @@ const createSpace = async (body, dbClient = prisma) => {
             name: body.name,
             ownerId: body.ownerId,
             description: body.description,
-            location: body.location,
+            city: body.city,
+            address: body.address,
             features: body.features,
             capacity: body.capacity,
             pricePerHour: body.pricePerHour,
@@ -22,11 +24,11 @@ const createSpace = async (body, dbClient = prisma) => {
     return data;
 };
 
-const createSpaceWithImage = async (spaceData_, files) => {
+const createSpaceWithImage = async (spaceData_, files, sessionData) => {
     try {
         return await prisma.$transaction(
             async (trx) => {
-                //1. create space
+                // 1. create space
                 let { capacity, pricePerHour, ...spaceData } = spaceData_;
                 capacity = parseInt(capacity);
                 pricePerHour = parseInt(pricePerHour);
@@ -57,10 +59,28 @@ const createSpaceWithImage = async (spaceData_, files) => {
                     const size = JSON.stringify(imgData.size);
                     uploadedImages.push({ size: size, ...imgData });
 
-                    fs.unlinkSync(file.path)
+                    fs.unlinkSync(file.path);
                 }
 
-                return { space: insertedSpaceData, images: uploadedImages };
+                //3. crate space session
+                const sessionDataArr = [];
+                const sessionsData = JSON.parse(sessionData);
+                for (let i = 0; i < sessionsData.length; i++) {
+                    // console.log(sessionsData[i])
+                    const insertedSession = await spaceSession.createSpaceSession(trx, {
+                        spaceId: insertedSpaceData.id,
+                        day: sessionsData[i].day,
+                        startTime: sessionsData[i].startTime,
+                        endTime: sessionsData[i].endTime,
+                    });
+                    sessionDataArr.push(insertedSession);
+                }
+
+                return {
+                    space: insertedSpaceData,
+                    images: uploadedImages,
+                    sessions: sessionDataArr,
+                };
             },
             {
                 timeout: 10000, //ms
@@ -99,23 +119,27 @@ const getSpaces = async (params) => {
     let where = {};
 
     if (params.page) {
-        page = params.page;
+        page = parseInt(params.page);
     }
-
     if (params.size) {
-        size = params.size;
+        size = parseInt(params.size);
     }
-
     if (params.name) {
         where.name = {
             contains: params.name,
         };
+    }
+    if (params.userId) {
+        where.ownerId = params.userId;
     }
 
     const data = await prisma.space.findMany({
         skip: page * size,
         take: size,
         where: where,
+        include: {
+            SpaceImage: true,
+        }
     });
 
     const count = await prisma.space.count({
