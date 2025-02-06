@@ -3,23 +3,25 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const createSpaceImage = async (dbClient = prisma, body) => {
-    const data = await dbClient.spaceImage.create({
-        data: {
-            filename: body.filename,
-            spaceId: body.spaceId,
-            size: body.size,
-            url: body.url,
-        },
-    });
+    try {
+        const data = await dbClient.spaceImage.create({
+            data: {
+                filename: body.filename,
+                spaceId: body.spaceId,
+                size: body.size,
+                url: body.url,
+            },
+        });
 
-    return data;
+        return data;
+    } catch (error) {
+        throw error;
+    }
 };
 
 const getSpaceImages = async (spaceId, params) => {
     try {
-        let where = {
-            spaceId: spaceId,
-        };
+        let where = { spaceId };
         let size = 10;
         let page = 0;
 
