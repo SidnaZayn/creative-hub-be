@@ -2,6 +2,7 @@ import express from 'express';
 import spaceService from './space.service.js';
 import verifyToken from '../../middleware/auth.guard.js';
 import spaceImageService from '../space-image/space-image.service.js';
+import spaceSessionService from '../space-session/space-session.service.js';
 import multer from 'multer';
 
 const upload = multer({ dest: 'uploads/' });
@@ -86,6 +87,30 @@ router.get('/space/:id/images', async (req, res) => {
         }
 
         const { data, count } = await spaceImageService.getSpaceImages(spaceId, params);
+        if (count < 1) {
+            return res.status(404).send({ message: 'data not found' });
+        }
+        return res.status(200).send({ data, count, message: 'success get data' });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({ error });
+    }
+});
+
+router.get('/space/:id/sessions', async (req, res) => {
+    try {
+        const spaceId = req.params.id;
+        if (!spaceId) throw new Error('space id null !');
+
+        let params = {};
+        if (req.query.size) {
+            params.size = req.query.size;
+        }
+        if (req.query.page) {
+            params.page = req.query.page;
+        }
+
+        const { data, count } = await spaceSessionService.getSpaceSessions({ spaceId, ...params });
         return res.status(200).send({ data, count, message: 'success get data' });
     } catch (error) {
         console.log(error);
