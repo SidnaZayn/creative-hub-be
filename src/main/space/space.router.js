@@ -16,10 +16,20 @@ BigInt.prototype.toJSON = function () {
 
 router.post('/space', verifyToken, upload.array('images'), async (req, res) => {
     try {
-        let { images: imagesData, sessionsData: sessions, ...spaceData } = req.body;
-        // sessions = JSON.parse(sessions);
-        const files = req.files;
-        const data = await spaceService.createSpaceWithImage(spaceData, files, sessions);
+        let {
+            images: imagesData,
+            sessions: sessionsData,
+            policies: policiesData,
+            ...spaceData
+        } = req.body;
+
+        const files = req.files;    
+        const data = await spaceService.createSpaceWithImage(
+            spaceData,
+            files,
+            sessionsData,
+            policiesData
+        ); 
         if (data) {
             return res.status(201).json({ data, message: 'success create data' });
         } else {
@@ -27,7 +37,7 @@ router.post('/space', verifyToken, upload.array('images'), async (req, res) => {
             return res.status(400).json({ message: 'Failed to create data' });
         }
     } catch (error) {
-        console.error(error); // Use console.error for errors
+        // console.error(error); // Use console.error for errors
         return res.status(400).json({
             message: 'Name, capacity and pricePerHour are required',
             error: error.message,
@@ -139,6 +149,7 @@ router.put('/space/:id', verifyToken, async (req, res) => {
         const data = await spaceService.updateSpace(id, req.body);
         return res.status(200).send({ data, message: 'success update data' });
     } catch (error) {
+        // console.log(error)
         return res.status(500).send({ error });
     }
 });
@@ -150,6 +161,7 @@ router.delete('/space/:id', verifyToken, async (req, res) => {
         const data = await spaceService.deleteSpace(id);
         return res.status(200).send({ data, message: 'success delete data' });
     } catch (error) {
+        // console.log(error)
         return res.status(500).send({ error });
     }
 });

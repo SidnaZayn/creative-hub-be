@@ -32,7 +32,7 @@ model Space {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  category     Category?      @relation(fields: [categoryId], references: [id])
+  category     Category?      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   SpaceImage   SpaceImage[]
   SpaceSession SpaceSession[]
 }
@@ -76,7 +76,7 @@ model SpaceSession {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  space   Space?    @relation(fields: [spaceId], references: [id])
+  space   Space?    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   Booking Booking[]
 }
 
@@ -91,7 +91,7 @@ model Booking {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
-  spaceSession SpaceSession? @relation(fields: [spaceSessionId], references: [id])
+  spaceSession SpaceSession? @relation(fields: [spaceSessionId], references: [id], onDelete: Cascade)
 }
 
 model Policy {

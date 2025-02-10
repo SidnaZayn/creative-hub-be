@@ -3,6 +3,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 import spaceImage from '../space-image/space-image.service.js';
 import spaceSession from '../space-session/space-session.service.js';
+import spacePolicyService from '../space-policy/space-policy.service.js';
 
 const prisma = new PrismaClient();
 
@@ -24,7 +25,7 @@ const createSpace = async (body, dbClient = prisma) => {
     return data;
 };
 
-const createSpaceWithImage = async (spaceData_, files, sessionData) => {
+const createSpaceWithImage = async (spaceData_, files, sessionData, policies) => {
     try {
         return await prisma.$transaction(
             async (trx) => {
@@ -66,7 +67,6 @@ const createSpaceWithImage = async (spaceData_, files, sessionData) => {
                 const sessionDataArr = [];
                 const sessionsData = JSON.parse(sessionData);
                 for (let i = 0; i < sessionsData.length; i++) {
-                    // console.log(sessionsData[i])
                     const insertedSession = await spaceSession.createSpaceSession(trx, {
                         spaceId: insertedSpaceData.id,
                         day: sessionsData[i].day,
@@ -76,10 +76,19 @@ const createSpaceWithImage = async (spaceData_, files, sessionData) => {
                     sessionDataArr.push(insertedSession);
                 }
 
+                //4. create space policies
+                const policiesData = policies.map(async (policy) => {
+                    const data = await spacePolicyService.createSpacePolicy(trx, {
+                        spaceId: insertedSpaceData.id,
+                        policy,
+                    });
+                    return data;
+                });
                 return {
                     space: insertedSpaceData,
                     images: uploadedImages,
                     sessions: sessionDataArr,
+                    policies: await Promise.all(policiesData),
                 };
             },
             {
@@ -87,7 +96,6 @@ const createSpaceWithImage = async (spaceData_, files, sessionData) => {
             }
         );
     } catch (error) {
-        // console.log(error)
         throw error;
     }
 };
@@ -139,7 +147,7 @@ const getSpaces = async (params) => {
         where: where,
         include: {
             SpaceImage: true,
-        }
+        },
     });
 
     const count = await prisma.space.count({
