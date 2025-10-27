@@ -8,6 +8,7 @@ import spaceImage from './src/main/space-image/space-image.router.js';
 import spaceSession from './src/main/space-session/space-session.router.js';
 import spacePolicy from './src/main/space-policy/space-policy.router.js';
 import category from './src/main/category/category.router.js';
+import booking from './src/main/booking/booking.router.js';
 import bodyParser from 'body-parser';
 import { createSuperAdmin } from './src/main/auth/auth.service.js';
 
@@ -22,6 +23,7 @@ app.use('/api', spaceSession);
 app.use('/api', spacePolicy);
 app.use('/api', space);
 app.use('/api', category);
+app.use('/api', booking);
 
 const PORT = 5000;
 if (process.env.NODE_ENV === 'test') {
