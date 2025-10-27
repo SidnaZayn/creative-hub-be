@@ -39,7 +39,7 @@ router.post('/space', verifyToken, upload.array('images'), async (req, res) => {
     } catch (error) {
         // console.error(error); // Use console.error for errors
         return res.status(400).json({
-            message: 'Name, capacity and pricePerHour are required',
+            message: 'Failed to create data',
             error: error.message,
         });
     }

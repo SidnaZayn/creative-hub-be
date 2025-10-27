@@ -7,17 +7,20 @@ const router = express.Router();
 // router.post('/auth/register', register);
 
 router.post('/auth/login', async (req, res) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: req.body.email,
-        password: req.body.password,
-    });
-
-    const { access_token, refresh_token } = data.session;
-
-    if (error) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+    try {        
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: req.body.email,
+            password: req.body.password,
+        });
+        if (error || !data.session) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+        const { access_token, refresh_token } = data.session;
+    
+        return res.status(200).json({ access_token, refresh_token });
+    } catch (error) {
+        return res.status(500).json({ message: 'Internal server error' });
     }
-    return res.status(200).json({ access_token, refresh_token });
 });
 
 router.post('/auth/logout', (req, res) => {

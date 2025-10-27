@@ -1,10 +1,7 @@
 import request from 'supertest';
 import { supabase } from '../src/lib/supabase';
 
-let user;
-let userToken;
-let testData;
-const spaceId = '2ee8260b-d471-4868-a578-a819bedefd32';
+let user, userToken, testData, spaceId;
 
 beforeAll(async () => {
     // const { data, error } = await supabase.auth.signInWithPassword({
@@ -16,7 +13,41 @@ beforeAll(async () => {
     userToken = global.app.access_token;
     const { data: userData } = await supabase.auth.getUser(userToken);
     user = userData.user;
-});
+    const sessions = [
+        {
+          day: "TUESDAY",
+          startTime: "14:00",
+          endTime: "16:00",
+          price: "50000",
+          capacity: "10",
+        },
+        {
+          day: "WEDNESDAY",
+          startTime: "14:00",
+          endTime: "16:00",
+          price: "50000",
+          capacity: "10",
+        },
+      ];
+      const features = { audio: true, wifi: true, projector: true, ac: true };
+      const policies = ["policy 1", "policy 2", "policy 3"];
+    
+      const responseSpace = await request(global.app)
+        .post("/api/space")
+        .set("Authorization", "Bearer " + userToken)
+        .field("name", "Space Test")
+        .field("ownerId", user.id)
+        .field("description", "desc")
+        .field("location", "Jakarta")
+        .field("features", JSON.stringify(features))
+        .field("capacity", 10)
+        .field("pricePerHour", 50000)
+        .field("categoryId", "1f570eef-4837-495a-bb55-806f614e440f")
+        .field("policies", policies)
+        .field("sessions", JSON.stringify(sessions))
+        .attach("images", "__tests__/img/image_1.jpg");
+      spaceId = responseSpace.body.data.space.id;
+}, 30000);
 
 describe('POST /api/space/image', () => {
     test('create space image with valid data', async () => {
@@ -102,4 +133,11 @@ describe('DELETE /api/space/image/:id', () => {
             .set('Authorization', 'Bearer ' + userToken);
         expect(response.status).toBe(500);
     });
+});
+
+afterAll(async () => {
+    // Clean up: delete the created space
+    await request(global.app)
+        .delete('/api/space/' + spaceId)
+        .set('Authorization', 'Bearer ' + userToken);
 });
