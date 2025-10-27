@@ -52,6 +52,7 @@ model SpaceImage {
 enum BookingStatus {
   UNPAID
   PAID
+  CANCEL
 }
 
 enum Days {

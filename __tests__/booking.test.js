@@ -1,5 +1,6 @@
 import request from "supertest";
 import { supabase } from "../src/lib/supabase";
+import { describe } from "node:test";
 
 const SPACE_SESSION_ID = "f32150ef-db32-4c83-aa82-3a4217e156b8"; //always change it for test 
 let user, userToken, testData, bookingId;
@@ -107,3 +108,24 @@ describe("DELETE /api/booking/:id", () => {
   });
 });
 
+describe("PATCH /api/booking/:id/paid", () => {
+    test("mark booking as paid", async () => {
+    const response = await request(global.app)
+        .patch("/api/booking/" + bookingId + "/paid")
+        .set("Authorization", "Bearer " + userToken);
+    expect(response.status).toBe(200);
+    expect(response.body.data).toHaveProperty("id", bookingId);
+    expect(response.body.data).toHaveProperty("isPaid", true);
+  });
+});
+
+describe("PATCH /api/booking/:id/cancel", () => {
+    test("cancel booking", async () => {
+    const response = await request(global.app)
+        .patch("/api/booking/" + bookingId + "/cancel")
+        .set("Authorization", "Bearer " + userToken);
+    expect(response.status).toBe(200);
+    expect(response.body.data).toHaveProperty("id", bookingId);
+    expect(response.body.data).toHaveProperty("isCancelled", true);
+  });
+});
