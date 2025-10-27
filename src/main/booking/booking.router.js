@@ -79,4 +79,30 @@ router.delete("/booking/:id", verifyToken, async (req, res) => {
   }
 });
 
+router.patch("/booking/:id/cancel", verifyToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = await bookingService.updateBooking(id, { status: "CANCEL" });
+    return res.status(200).json({ data, message: "success cancel booking" });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to cancel booking",
+      error: error.message,
+    });
+  }
+});
+
+router.patch("/booking/:id/paid", verifyToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = await bookingService.updateBooking(id, { status: 'PAID' });
+    return res.status(200).json({ data, message: "success mark booking as paid" });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to mark booking as paid",
+      error: error.message,
+    });
+  }
+});
+
 export default router;

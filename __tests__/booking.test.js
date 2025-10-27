@@ -1,8 +1,7 @@
 import request from "supertest";
 import { supabase } from "../src/lib/supabase";
-import { describe } from "node:test";
 
-const SPACE_SESSION_ID = "f32150ef-db32-4c83-aa82-3a4217e156b8"; //always change it for test 
+const SPACE_SESSION_ID = "f32150ef-db32-4c83-aa82-3a4217e156b8"; //always change it for test
 let user, userToken, testData, bookingId;
 beforeAll(async () => {
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -32,18 +31,18 @@ describe("POST /api/booking", () => {
     bookingId = testData.id;
     expect(response.status).toBe(201);
     expect(response.body.data).toHaveProperty("id");
-  });
+  }, 10000);
 
-    test("create booking with invalid data", async () => {
+  test("create booking with invalid data", async () => {
     const response = await request(global.app)
-        .post("/api/booking")
-        .set("Authorization", "Bearer " + userToken)
-        .send({
-          date: "",
-          spaceSessionId: "",
-          userId: user.id,
-          name: "Test Booking",
-        });
+      .post("/api/booking")
+      .set("Authorization", "Bearer " + userToken)
+      .send({
+        date: "",
+        spaceSessionId: "",
+        userId: user.id,
+        name: "Test Booking",
+      });
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty("error");
     expect(response.body.message).toBe("Failed to create booking");
@@ -58,10 +57,10 @@ describe("GET /api/bookings", () => {
     expect(response.status).toBe(200);
     expect(response.body.data).toBeInstanceOf(Array);
   });
-    test("fetch bookings with userId filter", async () => {
+  test("fetch bookings with userId filter", async () => {
     const response = await request(global.app)
-        .get(`/api/bookings?userId=${user.id}`)
-        .set("Authorization", "Bearer " + userToken);
+      .get(`/api/bookings?userId=${user.id}`)
+      .set("Authorization", "Bearer " + userToken);
     expect(response.status).toBe(200);
     expect(response.body.data).toBeInstanceOf(Array);
   });
@@ -75,57 +74,57 @@ describe("GET /api/booking/:id", () => {
     expect(response.body.data).toHaveProperty("id", bookingId);
     expect(response.body.data).toHaveProperty("name", "Test Booking");
   });
-    test("fetch booking by invalid id", async () => {
+  test("fetch booking by invalid id", async () => {
     const response = await request(global.app)
-        .get("/api/booking/0")
-        .set("Authorization", "Bearer " + userToken);
+      .get("/api/booking/0")
+      .set("Authorization", "Bearer " + userToken);
     expect(response.status).toBe(500);
     expect(response.body).toHaveProperty("error");
   });
 });
 
 describe("PUT /api/booking/:id", () => {
-    test("update booking by id", async () => {
+  test("update booking by id", async () => {
     const response = await request(global.app)
-        .put("/api/booking/" + bookingId)
-        .set("Authorization", "Bearer " + userToken)
-        .send({
-          name: "Updated Booking Name",
-        });
+      .put("/api/booking/" + bookingId)
+      .set("Authorization", "Bearer " + userToken)
+      .send({
+        name: "Updated Booking Name",
+      });
     expect(response.status).toBe(200);
     expect(response.body.data).toHaveProperty("id", bookingId);
     expect(response.body.data).toHaveProperty("name", "Updated Booking Name");
   });
 });
 
-describe("DELETE /api/booking/:id", () => {
-    test("delete booking by id", async () => {
-    const response = await request(global.app)
-        .delete("/api/booking/" + bookingId)
-        .set("Authorization", "Bearer " + userToken);
-    expect(response.status).toBe(200);
-    expect(response.body.data).toHaveProperty("id", bookingId);
-  });
-});
-
 describe("PATCH /api/booking/:id/paid", () => {
-    test("mark booking as paid", async () => {
+  test("mark booking as paid", async () => {
     const response = await request(global.app)
-        .patch("/api/booking/" + bookingId + "/paid")
-        .set("Authorization", "Bearer " + userToken);
+      .patch("/api/booking/" + bookingId + "/paid")
+      .set("Authorization", "Bearer " + userToken);
     expect(response.status).toBe(200);
     expect(response.body.data).toHaveProperty("id", bookingId);
-    expect(response.body.data).toHaveProperty("isPaid", true);
+    expect(response.body.data).toHaveProperty("status", "PAID");
   });
 });
 
 describe("PATCH /api/booking/:id/cancel", () => {
-    test("cancel booking", async () => {
+  test("cancel booking", async () => {
     const response = await request(global.app)
-        .patch("/api/booking/" + bookingId + "/cancel")
-        .set("Authorization", "Bearer " + userToken);
+      .patch("/api/booking/" + bookingId + "/cancel")
+      .set("Authorization", "Bearer " + userToken);
     expect(response.status).toBe(200);
     expect(response.body.data).toHaveProperty("id", bookingId);
-    expect(response.body.data).toHaveProperty("isCancelled", true);
+    expect(response.body.data).toHaveProperty("status", "CANCEL");
+  });
+});
+
+describe("DELETE /api/booking/:id", () => {
+  test("delete booking by id", async () => {
+    const response = await request(global.app)
+      .delete("/api/booking/" + bookingId)
+      .set("Authorization", "Bearer " + userToken);
+    expect(response.status).toBe(200);
+    expect(response.body.data).toHaveProperty("id", bookingId);
   });
 });
