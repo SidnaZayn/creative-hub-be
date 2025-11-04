@@ -7,12 +7,7 @@ const router = express.Router();
 router.post('/category', verifyToken, async (req, res) => {
   try {
     const data = await categoryService.createCategory(req.body);
-    if (data) {
-      return res.status(201).json({ data, message: 'success create data' });
-    } else {
-      // Handle case where data is falsy
-      return res.status(400).json({ message: 'Failed to create data' });
-    }
+    return res.status(201).json({ data, message: 'success create data' });
   } catch (error) {
     // console.error(error); // Use console.error for errors
     return res.status(400).json({ message: 'Name is required', error: error.message });

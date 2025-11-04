@@ -4,14 +4,8 @@ import { supabase } from "../src/lib/supabase";
 const SPACE_SESSION_ID = "f32150ef-db32-4c83-aa82-3a4217e156b8"; //always change it for test
 let user, userToken, testData, bookingId;
 beforeAll(async () => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: "zidnazen@gmail.com",
-    password: "11223344",
-  });
-  const { access_token, refresh_token } = data.session;
-
-  userToken = access_token;
-  const { data: userData } = await supabase.auth.getUser();
+  userToken = global.app.access_token;
+  const { data: userData } = await supabase.auth.getUser(userToken);
   user = userData.user;
 });
 

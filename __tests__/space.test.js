@@ -8,12 +8,6 @@ let userToken;
 let testData;
 
 beforeAll(async () => {
-  // const { data, error } = await supabase.auth.signInWithPassword({
-  //   email: 'zidnazen@gmail.com',
-  //   password: '11223344',
-  // });
-  // const { access_token, refresh_token } = data.session; console.log(access_token)
-
   userToken = global.app.access_token;
   const { data: userData } = await supabase.auth.getUser(userToken);
   user = userData.user;
