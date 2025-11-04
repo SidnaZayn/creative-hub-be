@@ -26,10 +26,8 @@ router.get("/bookings", verifyToken, async (req, res) => {
     if (req.query.size) {
       params.size = req.query.size;
     }
-    if (req.query.userId) {
-      params.userId = req.query.userId;
-    }
-    const result = await bookingService.getBookings(params);
+    
+    const result = await bookingService.getBookings(params, req.user.id);
     return res.status(200).json({ data: result.data, count: result.count });
   } catch (error) {
     return res.status(500).json({
