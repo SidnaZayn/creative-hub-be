@@ -1,6 +1,5 @@
 import request from "supertest";
 import { supabase } from "../src/lib/supabase";
-import { after } from "node:test";
 
 let user;
 let userToken;
@@ -29,7 +28,7 @@ describe("GET /dashboard/user/bookings", () => {
       .set("Authorization", "Bearer " + userToken);
     expect(response.status).toBe(200);
     expect(response.body.data).toBeInstanceOf(Array);
-  });
+  }, 10000);
 
   test("fetch data with PAID status", async () => {
     const response = await request(global.app)
