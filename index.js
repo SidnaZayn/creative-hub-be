@@ -12,6 +12,7 @@ import booking from './src/main/booking/booking.router.js';
 import bodyParser from 'body-parser';
 import { createSuperAdmin } from './src/main/auth/auth.service.js';
 import dashboard from './src/main/dashboard/index.js';
+import review from './src/main/review/review.router.js';
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api', space);
 app.use('/api', category);
 app.use('/api', booking);
 app.use('/api', dashboard);
+app.use('/api', review);
 
 const PORT = 5000;
 if (process.env.NODE_ENV === 'test') {

@@ -35,6 +35,7 @@ model Space {
   category     Category?      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   SpaceImage   SpaceImage[]
   SpaceSession SpaceSession[]
+  Review       Review[]
 }
 
 model SpaceImage {
@@ -101,4 +102,16 @@ model Policy {
   spaceId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  spaceId   String
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 }
