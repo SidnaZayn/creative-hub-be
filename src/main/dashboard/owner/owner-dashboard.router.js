@@ -1,11 +1,8 @@
 import express from "express";
-import {
-  getOwnerBookings,
-  getOwnerSpaces,
-  getSpaceBookings,
-} from "./owner-dashboard.service.js";
+import { getOwnerBookings, getOwnerSpaces, getSpaceBookings } from "./owner-dashboard.service.js";
 import { BookingStatus } from "@prisma/client";
 import verifyToken from "../../../middleware/auth.guard.js";
+import authorize from "../../../middleware/authorize.guard.js";
 
 const router = express.Router();
 

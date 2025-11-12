@@ -32,6 +32,9 @@ app.use('/api', review);
 const PORT = 5000;
 if (process.env.NODE_ENV === 'test') {
   app.access_token = process.env.ACCESS_TOKEN;
+  app.admin_token = process.env.ADMIN_TOKEN;
+  app.user_token = process.env.USER_TOKEN;
+  app.owner_token = process.env.OWNER_TOKEN;
 }
 // await createSuperAdmin();
 if (process.env.NODE_ENV !== 'test') {
